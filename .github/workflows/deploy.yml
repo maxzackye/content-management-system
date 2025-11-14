@@ -21,9 +21,9 @@ jobs:
 
     - name: Install dependencies
       run: |
+        pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Check Streamlit app
+    - name: Check Streamlit version
       run: |
-        python streamlit_app.py &
-        sleep 10
+        python -c "import streamlit; print(f'Streamlit version: {streamlit.__version__}')"

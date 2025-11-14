@@ -197,4 +197,9 @@ def main():
     st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
-    main()
+    # 添加错误处理
+    try:
+        main()
+    except Exception as e:
+        st.error(f"应用出现错误: {str(e)}")
+        st.info("请刷新页面重试或联系管理员")
