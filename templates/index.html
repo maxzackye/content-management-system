@@ -4,38 +4,51 @@
 {% block header %}主页{% endblock %}
 
 {% block content %}
-<div>
-    <h2>添加新内容</h2>
-    <form method="POST" action="{{ url_for('add_post') }}">
-        <div class="form-group">
-            <label for="content">内容:</label>
-            <textarea id="content" name="content" rows="5" required></textarea>
-        </div>
-        <button type="submit" class="btn">保存</button>
-    </form>
+<div class="card">
+    <div class="card-header">
+        <h3 class="mb-0">➕ 添加新内容</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('add_post') }}">
+            <div class="mb-3">
+                <label for="content" class="form-label">内容:</label>
+                <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">保存内容</button>
+        </form>
+    </div>
 </div>
 
-<div>
-    <h2>历史内容</h2>
-    {% if posts %}
-        <table>
-            <thead>
-                <tr>
-                    <th>时间</th>
-                    <th>内容</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for post in posts %}
-                <tr>
-                    <td>{{ post[1] }}</td>
-                    <td class="post-content">{{ post[0] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>暂无内容</p>
-    {% endif %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="mb-0">📚 历史内容</h3>
+    </div>
+    <div class="card-body">
+        {% if posts %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>内容</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in posts %}
+                        <tr>
+                            <td>{{ post[1] }}</td>
+                            <td class="post-content">{{ post[0] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <h5 class="alert-heading">暂无内容</h5>
+                <p>目前还没有保存的内容，请在上方添加新内容。</p>
+            </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

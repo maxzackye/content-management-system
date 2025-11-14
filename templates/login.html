@@ -4,19 +4,57 @@
 {% block header %}登录{% endblock %}
 
 {% block content %}
-<form method="POST">
-    <div class="form-group">
-        <label for="username">用户名:</label>
-        <input type="text" id="username" name="username" required>
-    </div>
-    
-    <div class="form-group">
-        <label for="password">密码:</label>
-        <input type="password" id="password" name="password" required>
-    </div>
-    
-    <button type="submit" class="btn">登录</button>
-</form>
+<style>
+.login-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.form-group {
+    margin-bottom: 20px;
+}
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.btn-login:hover {
+    opacity: 0.9;
+}
+.login-info {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+    font-size: 14px;
+}
+</style>
 
-<p>提示：默认用户名为 <strong>admin</strong>，密码为 <strong>password</strong></p>
+<div class="login-container">
+    <form method="POST">
+        <div class="form-group">
+            <label for="username">用户名:</label>
+            <input type="text" id="username" name="username" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">密码:</label>
+            <input type="password" id="password" name="password" class="form-control" required>
+        </div>
+        
+        <button type="submit" class="btn-login">登录</button>
+    </form>
+    
+    <div class="login-info">
+        <p>默认账号密码均为: 778899</p>
+    </div>
+</div>
 {% endblock %}

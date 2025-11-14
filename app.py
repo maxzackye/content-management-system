@@ -19,10 +19,10 @@ def init_db():
                   content TEXT NOT NULL,
                   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)''')
     
-    # 添加默认用户（用户名: admin, 密码: password）
+    # 添加默认用户（用户名: admin, 密码: 778899）
     try:
         c.execute("INSERT INTO users (username, password) VALUES (?, ?)", 
-                  ('admin', 'password'))
+                  ('admin', '778899'))
     except sqlite3.IntegrityError:
         pass  # 用户已存在
     
@@ -58,7 +58,7 @@ def login():
             session['username'] = username
             return redirect(url_for('index'))
         else:
-            flash('Invalid username or password')
+            flash('用户名或密码错误')
     
     return render_template('login.html')
 

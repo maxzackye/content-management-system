@@ -7,7 +7,8 @@ import os
 # 页面配置
 st.set_page_config(
     page_title="内容管理系统",
-    layout="wide"
+    layout="wide",
+    page_icon="📝"
 )
 
 # 初始化数据库
@@ -26,10 +27,10 @@ def init_db():
                   content TEXT NOT NULL,
                   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)''')
     
-    # 添加默认用户（用户名: admin, 密码: password）
+    # 添加默认用户（用户名: admin, 密码: 778899）
     try:
         c.execute("INSERT INTO users (username, password) VALUES (?, ?)", 
-                  ('admin', 'password'))
+                  ('admin', '778899'))
     except sqlite3.IntegrityError:
         pass  # 用户已存在
     
@@ -69,7 +70,70 @@ init_db()
 
 # 应用主体逻辑
 def main():
-    st.title("📝 内容管理系统")
+    # 添加自定义CSS样式
+    st.markdown("""
+    <style>
+    .main {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+    }
+    .login-box {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        margin: 50px auto;
+    }
+    .content-box {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+    .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 30px;
+    }
+    .logout-btn {
+        float: right;
+    }
+    h1 {
+        color: white;
+        text-align: center;
+        font-size: 2.5em;
+        margin-bottom: 0;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    h2 {
+        color: #333;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+    }
+    .stButton>button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-weight: bold;
+    }
+    .stButton>button:hover {
+        opacity: 0.9;
+    }
+    .welcome-text {
+        color: white;
+        text-align: center;
+        font-size: 1.2em;
+        margin-bottom: 30px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # 页面标题
+    st.markdown("<h1>📝 现代化内容管理系统</h1>", unsafe_allow_html=True)
     
     # 初始化会话状态
     if 'logged_in' not in st.session_state:
@@ -79,53 +143,49 @@ def main():
         
     # 登录页面
     if not st.session_state.logged_in:
-        st.subheader("用户登录")
-        username = st.text_input("用户名", key="login_username")
-        password = st.text_input("密码", type="password", key="login_password")
+        st.markdown('<div class="login-box">', unsafe_allow_html=True)
+        st.subheader("🔒 用户登录")
+        username = st.text_input("用户名")
+        password = st.text_input("密码", type="password")
         
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("登录"):
-                if authenticate(username, password):
-                    st.session_state.logged_in = True
-                    st.session_state.username = username
-                    st.success(f"欢迎, {username}!")
-                    st.experimental_rerun()
-                else:
-                    st.error("用户名或密码错误")
-        with col2:
-            if st.button("查看示例"):
-                # 显示一些示例数据
-                sample_data = pd.DataFrame({
-                    '时间': ['2023-01-01 10:00:00', '2023-01-02 15:30:00'],
-                    '内容': ['这是示例内容1', '这是示例内容2']
-                })
-                st.table(sample_data)
-                
-        st.info("默认账号: admin, 默认密码: password")
+        if st.button("登录"):
+            if authenticate(username, password):
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                st.success(f"欢迎, {username}!")
+                st.experimental_rerun()
+            else:
+                st.error("用户名或密码错误")
+        
+        st.info("默认账号密码均为: 778899")
+        st.markdown('</div>', unsafe_allow_html=True)
         return
     
     # 主页面
-    st.sidebar.title(f"欢迎, {st.session_state.username}")
+    st.markdown(f'<div class="welcome-text">欢迎, <strong>{st.session_state.username}</strong>! 您已成功登录系统。</div>', unsafe_allow_html=True)
+    
     if st.sidebar.button("退出登录"):
         st.session_state.logged_in = False
         st.session_state.username = None
         st.experimental_rerun()
     
     # 添加新内容
-    st.subheader("添加新内容")
+    st.markdown('<div class="content-box">', unsafe_allow_html=True)
+    st.subheader("➕ 添加新内容")
     content = st.text_area("请输入内容:", height=150, key="new_content")
     
-    if st.button("保存"):
+    if st.button("保存内容"):
         if content.strip():
             add_post(content)
-            st.success("内容已保存!")
+            st.success("内容已成功保存!")
             st.experimental_rerun()
         else:
             st.warning("请输入内容后再保存")
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # 显示历史内容
-    st.subheader("历史内容")
+    st.markdown('<div class="content-box">', unsafe_allow_html=True)
+    st.subheader("📚 历史内容")
     posts_df = get_posts()
     
     if not posts_df.empty:
@@ -134,6 +194,7 @@ def main():
         st.dataframe(posts_df, use_container_width=True)
     else:
         st.info("暂无内容，请添加新内容")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
