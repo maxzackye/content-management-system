@@ -238,6 +238,11 @@ def main():
     .btn-cancel:hover {
         background: #ddd;
     }
+    
+    /* 显示模态框的类 */
+    .modal.show {
+        display: block;
+    }
     </style>
     """, unsafe_allow_html=True)
     
@@ -293,64 +298,34 @@ def main():
         st.info("暂无内容，请添加新内容")
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # 添加内容的浮动按钮
-    st.markdown("""
-    <button class="add-content-btn" onclick="document.getElementById('addContentModal').style.display='block'">+</button>
-    """, unsafe_allow_html=True)
+    # 使用Streamlit按钮替代纯HTML按钮，以确保交互功能
+    if st.button("➕", key="add_content_fab", help="添加新内容"):
+        st.session_state.show_add_content_modal = True
     
     # 添加内容的模态框
-    st.markdown("""
-    <div id="addContentModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>➕ 添加新内容</h2>
-                <span class="close" onclick="document.getElementById('addContentModal').style.display='none'">&times;</span>
-            </div>
-            <div class="modal-body">
-                <textarea id="contentInput" placeholder="请输入内容..."></textarea>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="document.getElementById('addContentModal').style.display='none'">取消</button>
-                <button class="btn-save" onclick="saveContent()">保存内容</button>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # 添加JavaScript处理逻辑
-    st.markdown("""
-    <script>
-    function saveContent() {
-        const content = document.getElementById('contentInput').value;
-        if (content.trim() === '') {
-            alert('请输入内容后再保存');
-            return;
-        }
-        
-        // 使用Streamlit的通信机制发送数据
-        window.parent.postMessage({
-            type: 'streamlit:setComponentValue',
-            value: content,
-            key: 'new_content'
-        }, '*');
-        
-        // 清空输入框并关闭模态框
-        document.getElementById('contentInput').value = '';
-        document.getElementById('addContentModal').style.display = 'none';
-    }
-    </script>
-    """, unsafe_allow_html=True)
-    
-    # 处理保存内容的逻辑
-    if 'new_content' in st.session_state and st.session_state.new_content:
-        content = st.session_state.new_content
-        if content.strip():
-            add_post(content)
-            st.success("内容已成功保存!")
-            st.session_state.new_content = None
-            st.rerun()
-        else:
-            st.warning("请输入内容后再保存")
+    if st.session_state.show_add_content_modal:
+        with st.form("add_content_form"):
+            st.subheader("➕ 添加新内容")
+            content = st.text_area("请输入内容:", height=150, key="content_input")
+            
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                submit_button = st.form_submit_button("保存内容")
+            with col2:
+                cancel_button = st.form_submit_button("取消")
+            
+            if submit_button:
+                if content.strip():
+                    add_post(content)
+                    st.session_state.show_add_content_modal = False
+                    st.success("内容已成功保存!")
+                    st.rerun()
+                else:
+                    st.warning("请输入内容后再保存")
+            
+            if cancel_button:
+                st.session_state.show_add_content_modal = False
+                st.rerun()
 
 if __name__ == "__main__":
     # 添加错误处理
