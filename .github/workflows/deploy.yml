@@ -19,11 +19,23 @@ jobs:
       with:
         python-version: '3.9'
 
+    - name: Display Python version
+      run: python -c "import sys; print(sys.version)"
+
+    - name: Upgrade pip
+      run: |
+        python -m pip install --upgrade pip
+        pip --version
+
     - name: Install dependencies
       run: |
-        pip install --upgrade pip
         pip install -r requirements.txt
+        pip list
 
-    - name: Check Streamlit version
+    - name: Check Streamlit installation
       run: |
         python -c "import streamlit; print(f'Streamlit version: {streamlit.__version__}')"
+        
+    - name: Check pandas installation
+      run: |
+        python -c "import pandas; print(f'Pandas version: {pandas.__version__}')"
