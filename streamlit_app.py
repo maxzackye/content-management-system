@@ -129,6 +129,115 @@ def main():
         font-size: 1.2em;
         margin-bottom: 30px;
     }
+    
+    /* 添加内容按钮样式 */
+    .add-content-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 999;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .add-content-btn:hover {
+        opacity: 0.9;
+        transform: scale(1.05);
+    }
+    
+    /* 添加内容模态框样式 */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+    
+    .modal-content {
+        background-color: white;
+        margin: 10% auto;
+        padding: 30px;
+        border-radius: 10px;
+        width: 80%;
+        max-width: 600px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .close:hover {
+        color: black;
+    }
+    
+    .modal-header {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .modal-body textarea {
+        width: 100%;
+        min-height: 150px;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        resize: vertical;
+        font-family: inherit;
+    }
+    
+    .modal-footer {
+        margin-top: 20px;
+        text-align: right;
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    .btn-save:hover {
+        opacity: 0.9;
+    }
+    
+    .btn-cancel {
+        background: #f1f1f1;
+        color: #333;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-right: 10px;
+    }
+    
+    .btn-cancel:hover {
+        background: #ddd;
+    }
     </style>
     """, unsafe_allow_html=True)
     
@@ -140,6 +249,8 @@ def main():
         st.session_state.logged_in = False
     if 'username' not in st.session_state:
         st.session_state.username = None
+    if 'show_add_content_modal' not in st.session_state:
+        st.session_state.show_add_content_modal = False
         
     # 登录页面
     if not st.session_state.logged_in:
@@ -169,20 +280,6 @@ def main():
         st.session_state.username = None
         st.rerun()
     
-    # 添加新内容
-    st.markdown('<div class="content-box">', unsafe_allow_html=True)
-    st.subheader("➕ 添加新内容")
-    content = st.text_area("请输入内容:", height=150, key="new_content")
-    
-    if st.button("保存内容"):
-        if content.strip():
-            add_post(content)
-            st.success("内容已成功保存!")
-            st.rerun()
-        else:
-            st.warning("请输入内容后再保存")
-    st.markdown('</div>', unsafe_allow_html=True)
-    
     # 显示历史内容
     st.markdown('<div class="content-box">', unsafe_allow_html=True)
     st.subheader("📚 历史内容")
@@ -195,6 +292,65 @@ def main():
     else:
         st.info("暂无内容，请添加新内容")
     st.markdown('</div>', unsafe_allow_html=True)
+    
+    # 添加内容的浮动按钮
+    st.markdown("""
+    <button class="add-content-btn" onclick="document.getElementById('addContentModal').style.display='block'">+</button>
+    """, unsafe_allow_html=True)
+    
+    # 添加内容的模态框
+    st.markdown("""
+    <div id="addContentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>➕ 添加新内容</h2>
+                <span class="close" onclick="document.getElementById('addContentModal').style.display='none'">&times;</span>
+            </div>
+            <div class="modal-body">
+                <textarea id="contentInput" placeholder="请输入内容..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="document.getElementById('addContentModal').style.display='none'">取消</button>
+                <button class="btn-save" onclick="saveContent()">保存内容</button>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 添加JavaScript处理逻辑
+    st.markdown("""
+    <script>
+    function saveContent() {
+        const content = document.getElementById('contentInput').value;
+        if (content.trim() === '') {
+            alert('请输入内容后再保存');
+            return;
+        }
+        
+        // 使用Streamlit的通信机制发送数据
+        window.parent.postMessage({
+            type: 'streamlit:setComponentValue',
+            value: content,
+            key: 'new_content'
+        }, '*');
+        
+        // 清空输入框并关闭模态框
+        document.getElementById('contentInput').value = '';
+        document.getElementById('addContentModal').style.display = 'none';
+    }
+    </script>
+    """, unsafe_allow_html=True)
+    
+    # 处理保存内容的逻辑
+    if 'new_content' in st.session_state and st.session_state.new_content:
+        content = st.session_state.new_content
+        if content.strip():
+            add_post(content)
+            st.success("内容已成功保存!")
+            st.session_state.new_content = None
+            st.rerun()
+        else:
+            st.warning("请输入内容后再保存")
 
 if __name__ == "__main__":
     # 添加错误处理
