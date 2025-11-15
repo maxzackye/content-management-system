@@ -57,11 +57,20 @@ def add_post(content):
     conn.commit()
     conn.close()
 
+# 删除内容
+def delete_post(post_id):
+    db_path = os.environ.get('DATABASE_PATH', 'data.db')
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    c.execute('DELETE FROM posts WHERE id = ?', (post_id,))
+    conn.commit()
+    conn.close()
+
 # 获取所有内容
 def get_posts():
     db_path = os.environ.get('DATABASE_PATH', 'data.db')
     conn = sqlite3.connect(db_path)
-    df = pd.read_sql_query('SELECT content, timestamp FROM posts ORDER BY timestamp DESC', conn)
+    df = pd.read_sql_query('SELECT id, content, timestamp FROM posts ORDER BY timestamp DESC', conn)
     conn.close()
     return df
 
@@ -155,93 +164,46 @@ def main():
         transform: scale(1.05);
     }
     
-    /* 添加内容模态框样式 */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
+    /* 操作按钮样式 */
+    .action-buttons {
+        display: flex;
+        gap: 5px;
     }
     
-    .modal-content {
-        background-color: white;
-        margin: 10% auto;
-        padding: 30px;
-        border-radius: 10px;
-        width: 80%;
-        max-width: 600px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
+    .copy-btn, .delete-btn {
+        padding: 5px 10px;
+        border-radius: 3px;
+        border: none;
         cursor: pointer;
+        font-size: 12px;
     }
     
-    .close:hover {
-        color: black;
-    }
-    
-    .modal-header {
-        border-bottom: 1px solid #eee;
-        padding-bottom: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .modal-body textarea {
-        width: 100%;
-        min-height: 150px;
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        resize: vertical;
-        font-family: inherit;
-    }
-    
-    .modal-footer {
-        margin-top: 20px;
-        text-align: right;
-    }
-    
-    .btn-save {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .copy-btn {
+        background-color: #28a745;
         color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 10px 20px;
-        font-weight: bold;
-        cursor: pointer;
     }
     
-    .btn-save:hover {
-        opacity: 0.9;
+    .delete-btn {
+        background-color: #dc3545;
+        color: white;
     }
     
-    .btn-cancel {
-        background: #f1f1f1;
-        color: #333;
-        border: none;
-        border-radius: 5px;
-        padding: 10px 20px;
-        font-weight: bold;
-        cursor: pointer;
-        margin-right: 10px;
+    .copy-btn:hover {
+        opacity: 0.8;
     }
     
-    .btn-cancel:hover {
-        background: #ddd;
+    .delete-btn:hover {
+        opacity: 0.8;
     }
     
-    /* 显示模态框的类 */
-    .modal.show {
-        display: block;
+    /* 表格样式 */
+    .dataframe {
+        width: 100%;
+    }
+    
+    .dataframe td, .dataframe th {
+        padding: 10px;
+        border: 1px solid #ddd;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -256,6 +218,8 @@ def main():
         st.session_state.username = None
     if 'show_add_content_modal' not in st.session_state:
         st.session_state.show_add_content_modal = False
+    if 'delete_confirm_id' not in st.session_state:
+        st.session_state.delete_confirm_id = None
         
     # 登录页面
     if not st.session_state.logged_in:
@@ -292,8 +256,46 @@ def main():
     
     if not posts_df.empty:
         # 格式化列名
-        posts_df.columns = ['内容', '时间']
-        st.dataframe(posts_df, use_container_width=True)
+        posts_df.columns = ['ID', '内容', '时间', '操作']
+        
+        # 为每一行添加操作按钮
+        for index, row in posts_df.iterrows():
+            col1, col2, col3, col4 = st.columns([1, 3, 2, 1])
+            with col1:
+                st.write(row['ID'])
+            with col2:
+                st.write(row['内容'])
+            with col3:
+                st.write(row['时间'])
+            with col4:
+                # 创建按钮key，确保唯一性
+                copy_key = f"copy_{row['ID']}"
+                delete_key = f"delete_{row['ID']}"
+                
+                # 复制按钮
+                if st.button("📋", key=copy_key, help="复制到剪贴板"):
+                    st.write(f"<script>navigator.clipboard.writeText('{row['内容']}')</script>", unsafe_allow_html=True)
+                    st.success(f"内容已复制到剪贴板")
+                
+                # 删除按钮
+                if st.button("🗑️", key=delete_key, help="删除内容"):
+                    st.session_state.delete_confirm_id = row['ID']
+                    st.rerun()
+        
+        # 删除确认对话框
+        if st.session_state.delete_confirm_id:
+            with st.spinner(f"确认删除ID为 {st.session_state.delete_confirm_id} 的内容吗？"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("✅ 确认删除"):
+                        delete_post(st.session_state.delete_confirm_id)
+                        st.session_state.delete_confirm_id = None
+                        st.success("内容已删除")
+                        st.rerun()
+                with col2:
+                    if st.button("❌ 取消"):
+                        st.session_state.delete_confirm_id = None
+                        st.rerun()
     else:
         st.info("暂无内容，请添加新内容")
     st.markdown('</div>', unsafe_allow_html=True)
