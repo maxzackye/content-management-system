@@ -272,10 +272,20 @@ def main():
                 copy_key = f"copy_{row['ID']}"
                 delete_key = f"delete_{row['ID']}"
                 
-                # 复制按钮
-                if st.button("📋", key=copy_key, help="复制到剪贴板"):
-                    st.code(row['内容'])  # 显示内容以便用户复制
-                    st.success(f"内容已显示在上方代码框中，可直接复制")
+                # 复制按钮 - 使用HTML和JavaScript实现直接复制到剪贴板
+                copy_js = f"""
+                <script>
+                function copyToClipboard(text) {{
+                    navigator.clipboard.writeText(text).then(function() {{
+                        console.log('Copying to clipboard was successful!');
+                    }}, function(err) {{
+                        console.error('Could not copy text: ', err);
+                    }});
+                }}
+                </script>
+                <button class="copy-btn" onclick="copyToClipboard('{row['内容']}')">📋</button>
+                """
+                st.markdown(copy_js, unsafe_allow_html=True)
                 
                 # 删除按钮
                 if st.button("🗑️", key=delete_key, help="删除内容"):
