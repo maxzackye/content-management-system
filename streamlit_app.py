@@ -256,7 +256,7 @@ def main():
     
     if not posts_df.empty:
         # 格式化列名
-        posts_df.columns = ['ID', '内容', '时间', '操作']
+        posts_df.columns = ['ID', '内容', '时间']
         
         # 为每一行添加操作按钮
         for index, row in posts_df.iterrows():
@@ -274,8 +274,8 @@ def main():
                 
                 # 复制按钮
                 if st.button("📋", key=copy_key, help="复制到剪贴板"):
-                    st.write(f"<script>navigator.clipboard.writeText('{row['内容']}')</script>", unsafe_allow_html=True)
-                    st.success(f"内容已复制到剪贴板")
+                    st.code(row['内容'])  # 显示内容以便用户复制
+                    st.success(f"内容已显示在上方代码框中，可直接复制")
                 
                 # 删除按钮
                 if st.button("🗑️", key=delete_key, help="删除内容"):
@@ -284,18 +284,18 @@ def main():
         
         # 删除确认对话框
         if st.session_state.delete_confirm_id:
-            with st.spinner(f"确认删除ID为 {st.session_state.delete_confirm_id} 的内容吗？"):
-                col1, col2 = st.columns(2)
-                with col1:
-                    if st.button("✅ 确认删除"):
-                        delete_post(st.session_state.delete_confirm_id)
-                        st.session_state.delete_confirm_id = None
-                        st.success("内容已删除")
-                        st.rerun()
-                with col2:
-                    if st.button("❌ 取消"):
-                        st.session_state.delete_confirm_id = None
-                        st.rerun()
+            st.warning(f"确认删除ID为 {st.session_state.delete_confirm_id} 的内容吗？")
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("✅ 确认删除"):
+                    delete_post(st.session_state.delete_confirm_id)
+                    st.session_state.delete_confirm_id = None
+                    st.success("内容已删除")
+                    st.rerun()
+            with col2:
+                if st.button("❌ 取消"):
+                    st.session_state.delete_confirm_id = None
+                    st.rerun()
     else:
         st.info("暂无内容，请添加新内容")
     st.markdown('</div>', unsafe_allow_html=True)
