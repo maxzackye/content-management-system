@@ -36,6 +36,34 @@
 
 4. 在浏览器中访问 `http://127.0.0.1:5000`
 
+### 常见问题及解决方案
+
+#### inotify实例限制错误
+
+如果您在运行Flask应用时遇到以下错误：
+```
+OSError: [Errno 24] inotify instance limit reached
+```
+
+这是由于系统达到inotify实例限制导致的，通常发生在开发环境中。解决方案：
+
+1. **临时解决方案**：禁用调试模式
+   ```python
+   app.run(debug=False)
+   ```
+
+2. **永久解决方案**：增加系统inotify限制
+   ```bash
+   echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
+   sudo sysctl -p
+   ```
+
+3. **环境变量解决方案**：
+   设置环境变量以禁用文件监控：
+   ```bash
+   export FLASK_ENV=production
+   ```
+
 ## 方案二：使用Streamlit（现代化数据应用）
 
 ### 运行环境

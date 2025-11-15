@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -84,4 +85,7 @@ def add_post():
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=False)
+    # 解决inotify实例限制问题
+    # 在生产环境中禁用调试模式，或设置环境变量
+    use_reloader = os.environ.get('FLASK_ENV') != 'production'
+    app.run(debug=False, use_reloader=use_reloader)
