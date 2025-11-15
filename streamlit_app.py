@@ -153,7 +153,7 @@ def main():
                 st.session_state.logged_in = True
                 st.session_state.username = username
                 st.success(f"欢迎, {username}!")
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("用户名或密码错误")
         
@@ -167,7 +167,7 @@ def main():
     if st.sidebar.button("退出登录"):
         st.session_state.logged_in = False
         st.session_state.username = None
-        st.experimental_rerun()
+        st.rerun()
     
     # 添加新内容
     st.markdown('<div class="content-box">', unsafe_allow_html=True)
@@ -178,7 +178,7 @@ def main():
         if content.strip():
             add_post(content)
             st.success("内容已成功保存!")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.warning("请输入内容后再保存")
     st.markdown('</div>', unsafe_allow_html=True)
